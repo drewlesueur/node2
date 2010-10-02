@@ -50,8 +50,9 @@ app.configure () ->
   app.use form(keepExtensions: true)
 
 
-
+this.ObjectID = mongo.ObjectID
 this.db = new mongo.Db 'mydb', new mongo.Server(host, port, {}), {}
+
 this.db.open () -> 
   app.post "/methods/:method/:args", (req, res) ->
     args = decodeURIComponent(req.param(args));
