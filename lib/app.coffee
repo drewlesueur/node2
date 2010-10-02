@@ -29,7 +29,7 @@ MyTest = (req, res, next) ->
   if not req.session.officelist
     req.session.officelist = {}
 
-  req.officelistUser = () ->
+  req.user = () ->
     return req.session.officelist.userdomain + ":" + req.session.officelist.userid
   
   next()
@@ -53,16 +53,18 @@ app.configure () ->
 this.ObjectID = mongo.ObjectID
 this.db = new mongo.Db 'mydb', new mongo.Server(host, port, {}), {}
 
+
+methods_handle = (req, res) ->
+  args = req.body.args
+  console.log args
+  args = decodeURIComponent(args);
+  console.log args
+  methods[req.param("method")] JSON.parse(args), req, res #, db
+
 this.db.open () -> 
-  app.post "/methods/:method/:args", (req, res) ->
-    args = decodeURIComponent(req.param(args));
-    methods[req.param("method")] JSON.parse(args), req, res #, db
-  app.get "/methods/:method/:args", (req, res) ->
-    args = req.param("args")
-    console.log args
-    args = decodeURIComponent(args);
-    console.log args
-    methods[req.param("method")] JSON.parse(args), req, res #, db
+  app.post "/methods/:method", (req, res) ->
+    methods_handle req, res
+
 
 # take and image upload it and return the address for the thumbnail
 app.post "/upload-image", (req, res) ->
@@ -100,6 +102,7 @@ app.get "/", (req, res) ->
     <script src="/js/util.js"></script>
     <script src="/js/jquery.MultiFile.pack.js"></script>
     <script src="/js/ajaxupload.js"></script>
+    <script src="/coffee/officelist2.js"></script>
     <link type="text/css" rel="stylesheet" href="/css/style.css"></link>
     <script>
       var username = "#{username}"

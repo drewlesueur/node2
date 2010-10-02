@@ -1,11 +1,31 @@
 
-this.methods =
 
-  create : () ->
-    
+server = (method, args) ->
+  $.ajax
+    type: "POST",
+    url : "/methods/#{method}"
+    data: {"args": JSON.stringify(args)}
+    success: (data) ->
+      console.log data
 
-  request : () ->
+server.req = (args) ->
+  server "request", args
 
-  update : () ->
+server.cr = (args) ->
+  server "create", args
 
-  delete: () ->
+server.up = (args) ->
+  server "update", args
+
+server.del = (args) ->
+  server "delete", args
+  
+
+$(document).ready () ->
+  server.cr
+    type: "listing"
+    obj:
+      price: 100
+      _public: true
+
+
