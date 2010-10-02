@@ -3,17 +3,11 @@ require "./secret.coffee"
 request = require "request"
 this.request = request
 
-Client = require('mysql').Client
-client = new Client()
-client.user = data_config.user
-# client.host = '127.0.0.1'
-client.password = data_config.password
-client.connect()
-client.query('USE officelist');
+mongo = require("mongodb")
+host = 'localhost'
+port = mongo.Connection.DEFAULT_PORT
 
-
-this.client = client
-
+  
 Auth = require "auth"
 fs = require "fs"
 require ("./underscore")
@@ -55,6 +49,19 @@ app.configure () ->
   app.use MyTest
   app.use form(keepExtensions: true)
 
+
+
+this.db = new mongo.Db 'mydb', new mongo.Server(host, port, {}), {}
+this.db.open () -> 
+  app.post "/methods/:method/:args", (req, res) ->
+    args = decodeURIComponent(req.param(args));
+    methods[req.param("method")] JSON.parse(args), req, res #, db
+  app.get "/methods/:method/:args", (req, res) ->
+    args = req.param("args")
+    console.log args
+    args = decodeURIComponent(args);
+    console.log args
+    methods[req.param("method")] JSON.parse(args), req, res #, db
 
 # take and image upload it and return the address for the thumbnail
 app.post "/upload-image", (req, res) ->
@@ -100,11 +107,6 @@ app.get "/", (req, res) ->
   </html>
   """
   
-  
-  
-app.post "/methods/:method", (req, res) ->
-  methods[req.param("method")] req, res
-    
 
 
 
