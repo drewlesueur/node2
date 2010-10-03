@@ -1,22 +1,10 @@
 (function() {
-  var Listing, listings, render, server;
-  Listing = function() {
-    var built_out, description, for_lease, lat, lng, location, price, price_type, size;
-    ({
-      youtubes_urls: [],
-      youtube_html: [],
-      images: [],
-      default_youtube: ""
-    });
-    for_lease = "";
-    location = "";
-    size = "";
-    price = "";
-    price_type = "";
-    description = "";
-    built_out = "";
-    lat = "";
-    return (lng = "");
+  var Listing, body, display_add_listing, display_left_panel, html, listing, listings, render, render_add_listing, render_google_map, server;
+  "Listing = () ->\nyoutubes_urls : []\nyoutube_html: []\nimages : []\ndefault_youtube: \"\"\nfor_lease = \"\"\nlocation = \"\"\nsize = \"\"\nprice = \"\"\nprice_type = \"\"\ndescription = \"\"\nbuilt_out = \"\"\nlat = \"\"\nlng = \"\"";
+  Listing = {
+    update: function() {
+      return console.log(arguments);
+    }
   };
   server = function(method, args, func) {
     return $.ajax({
@@ -43,6 +31,56 @@
     return server("delete", args, func);
   };
   listings = [];
+  listing = {};
+  html = {
+    div: function() {
+      return $("<div><" + "/div>");
+    },
+    input: function() {
+      return $("<input />");
+    },
+    br: function() {
+      return $("<br />");
+    },
+    span: function() {
+      return $("<span><\/span>");
+    },
+    button: function() {
+      return $('<input type="button" />');
+    }
+  };
+  render_google_map = function() {
+    var div_map;
+    div_map = html.div();
+    return div_map.text("Google Map replacement");
+  };
+  body = $("body");
+  render = function() {
+    var add_listing, map_div;
+    map_div = render_google_map();
+    add_listing = render_add_listing(listing);
+    body.append(map_div);
+    return body.append(add_listing);
+  };
+  render_add_listing = function(listing) {
+    var listing_div, save_listing_button;
+    listing_div = html.div();
+    listing_div.append(html.div().text("Location"));
+    listing_div.append(html.input().attr("class", "location add"), html.br());
+    listing_div.append(html.div().text("Price"));
+    save_listing_button = html.button().val("save");
+    save_listing_button.click(function() {
+      var location, price;
+      location = $(".add.location").val();
+      price = $(".add.location").val();
+      return Listing.update(listing, {
+        location: location,
+        price: price
+      });
+    });
+    return listing_div.append(html.input().attr("class", "price add"), html.br(), save_listing_button);
+  };
+  display_left_panel = function() {};
   $(document).ready(function() {
     listings = server.req({
       type: "listing",
@@ -50,6 +88,8 @@
     }, function(data) {
       return console.log(data);
     });
+    render();
+    return null;
     return server.cr({
       type: "listing",
       obj: {
@@ -58,7 +98,5 @@
       }
     });
   });
-  render = function() {
-    return display_google_map();
-  };
+  display_add_listing = function() {};
 })();
