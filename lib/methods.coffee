@@ -13,17 +13,19 @@ this.methods =
       if err
         res.send "brokep"
       else
-        if "_id" of args.wh
-          args.wh._id = ObjectID.createFromHexString(args.wh._id)
-        if not "$or" of args.wh
-          args.wh["$or"] = []
-        args.wh["$or"].push
-          _user : req.user()
-          _public: true
-        collection.find args.wh, (err, cursor) ->
-          cursor.toArray (err, docs) ->
-            res.send docs
-
+        try
+          if "_id" of args.wh
+            args.wh._id = ObjectID.createFromHexString(args.wh._id)
+          if "$or" not of args.wh
+            args.wh["$or"] = []
+          args.wh["$or"].push
+            _user : req.user()
+            _public: true
+          collection.find args.wh, (err, cursor) ->
+            cursor.toArray (err, docs) ->
+              res.send docs
+        catch e
+          console.log e
   update : (args, req, res) ->
     db.collection args.type, (err, collection) ->
       if err

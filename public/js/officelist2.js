@@ -1,6 +1,24 @@
 (function() {
-  var server;
-  server = function(method, args) {
+  var Listing, listings, render, server;
+  Listing = function() {
+    var built_out, description, for_lease, lat, lng, location, price, price_type, size;
+    ({
+      youtubes_urls: [],
+      youtube_html: [],
+      images: [],
+      default_youtube: ""
+    });
+    for_lease = "";
+    location = "";
+    size = "";
+    price = "";
+    price_type = "";
+    description = "";
+    built_out = "";
+    lat = "";
+    return (lng = "");
+  };
+  server = function(method, args, func) {
     return $.ajax({
       type: "POST",
       url: ("/methods/" + (method)),
@@ -8,23 +26,30 @@
         "args": JSON.stringify(args)
       },
       success: function(data) {
-        return console.log(data);
+        return func && func(data);
       }
     });
   };
-  server.req = function(args) {
-    return server("request", args);
+  server.req = function(args, func) {
+    return server("request", args, func);
   };
-  server.cr = function(args) {
-    return server("create", args);
+  server.cr = function(args, func) {
+    return server("create", args, func);
   };
-  server.up = function(args) {
-    return server("update", args);
+  server.up = function(args, func) {
+    return server("update", args, func);
   };
-  server.del = function(args) {
-    return server("delete", args);
+  server.del = function(args, func) {
+    return server("delete", args, func);
   };
+  listings = [];
   $(document).ready(function() {
+    listings = server.req({
+      type: "listing",
+      wh: {}
+    }, function(data) {
+      return console.log(data);
+    });
     return server.cr({
       type: "listing",
       obj: {
@@ -33,4 +58,7 @@
       }
     });
   });
+  render = function() {
+    return display_google_map();
+  };
 })();
