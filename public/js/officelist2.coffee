@@ -1,3 +1,6 @@
+map = ""
+body = $("body") 
+
 """
 Listing = () ->
   youtubes_urls : []
@@ -60,36 +63,66 @@ html =
     
     
 render_google_map = () ->
-  div_map = html.div()
-  div_map.text "Google Map replacement"
+  div_map = html.div().attr("id", "map").css
+    width: 800
+    height: 500
+    position: 'absolute'
+    left: 300
+    top: 0
+    
+  body.append div_map
+  latlng = new google.maps.LatLng(33.4222685, -111.8226402)
+  myOptions = {
+    zoom: 11,
+    center: latlng,
+    mapTypeId: google.maps.MapTypeId.ROADMAP
+  };
+  map = new google.maps.Map(document.getElementById("map"),myOptions)
 
-body = $("body")  
+
+ 
 render = () ->
   map_div = render_google_map()
   add_listing = render_add_listing(listing)
-  body.append map_div
   body.append add_listing
 
 render_add_listing = (listing) ->
-  listing_div = html.div()
-  listing_div.append html.div().text "Location"
-  listing_div.append html.input().attr("class","location add"), html.br()
-  listing_div.append html.div().text "Price"
   
-  save_listing_button = html.button().val "save"
+  listing_div = $ render_form()
   
+  save_listing_button = {}
   save_listing_button.click () ->
     location = $(".add.location").val()
     price = $(".add.location").val()
     Listing.update listing,
       location: location
       price: price
-    
-    
-    
   listing_div.append html.input().attr("class","price add"), html.br(), save_listing_button
   
 
+
+
+render_form = () ->
+  """
+  <select id="for_lease">
+    <option>For Lease</option>
+    <option>For Purchase</option>
+  </select>
+  Location
+  <input id="location">
+  Size
+  <input id="Size">
+  Price
+  <input id="price">
+  Description
+  <textarea id="desc"></textarea>
+  
+  Size
+  <input type="text">
+  
+  """
+  
+  
 display_left_panel = () ->
   
   

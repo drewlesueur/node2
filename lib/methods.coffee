@@ -16,11 +16,7 @@ this.methods =
         try
           if "_id" of args.wh
             args.wh._id = ObjectID.createFromHexString(args.wh._id)
-          if "$or" not of args.wh
-            args.wh["$or"] = []
-          args.wh["$or"].push
-            _user : req.user()
-            _public: true
+          args.wh["$where"] = "this._user == '#{req.user()}' || this._public == true"
           collection.find args.wh, (err, cursor) ->
             cursor.toArray (err, docs) ->
               res.send docs

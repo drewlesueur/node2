@@ -95,7 +95,8 @@ app.get "/", (req, res) ->
   <head>
   </head>
   <body>
-    <!--<script src="http://maps.google.com/maps/api/js?sensor=false"></script>-->
+    <script src="http://maps.google.com/maps/api/js?sensor=false"></script>
+    <script src="/js/json2.js"></script>
     <script src="/js/jquery.js"></script>
     <script src="/js/jqueryui.js"></script>
     <script src="/js/underscore.js"></script>
