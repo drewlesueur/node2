@@ -18,8 +18,30 @@ Listing = () ->
   lng = ""
 """
 
-
-
+# simple autosave deal for jquery
+(() ->
+  $.fn.typed = (settings) ->
+    config = 
+      callback: () ->
+      wait: 750
+    if settings
+      $.extend config, settings
+    this.each () ->
+      $(this).attr 'old-val', $(this).val()
+      that = this
+      save = () ->
+        val = $(that).val()
+        old_val = $(that).attr "old-val"
+        if val isnt old_val
+          config.callback.call that
+          $(that).attr "old-val", val
+      t = ""
+      $(this).keydown () ->
+        clearTimeout t
+      $(this).keyup () ->
+        t = setTimeout save, config.wait
+    return this
+)(jQuery)
     
 
     
@@ -86,11 +108,44 @@ render = () ->
   add_listing = render_add_listing(listing)
   body.append add_listing
 
+set = () ->
+  
+Listing = 
+  set: (listing, k, v) ->
+    listing[k] = v #whatever the global listing is now
+    if k is "location"
+      add_google_map_marker v
+      
+    
+adding_markers = []
+
+remove_adding_markers = () ->
+  for i in adding_markers
+    i.setMap null
+    
+add_google_map_marker = (wherethe) ->
+  remove_adding_markers()
+  geocoder = new google.maps.Geocoder()
+  geocoder.geocode address: wherethe, (results, status) ->
+    if status is google.maps.GeocoderStatus.OK
+      map.setCenter results[0].geometry.location
+      marker = new google.maps.Marker
+        position: results[0].geometry.location
+        map: map
+        title: "hello world"
+        draggable: true
+      adding_markers.push marker
+    else
+      alert "Geocode was not successful for the following reason: " + status
+
+
 render_add_listing = (listing) ->
+  listing_div = $ add_listing_form()
+  save_listing_button =listing_div.find "#save_listing"
+  listing_div.find("#location").change () ->
+    Listing.set listing, "location", $(this).val()
+    
   
-  listing_div = $ render_form()
-  
-  save_listing_button = {}
   save_listing_button.click () ->
     location = $(".add.location").val()
     price = $(".add.location").val()
@@ -102,8 +157,9 @@ render_add_listing = (listing) ->
 
 
 
-render_form = () ->
+add_listing_form = () ->
   """
+  <pre>
   <select id="for_lease">
     <option>For Lease</option>
     <option>For Purchase</option>
@@ -116,10 +172,8 @@ render_form = () ->
   <input id="price">
   Description
   <textarea id="desc"></textarea>
-  
-  Size
-  <input type="text">
-  
+  <input type="button" id="save_listing" value="Save"/>
+  </pre>
   """
   
   
