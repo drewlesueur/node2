@@ -74,6 +74,9 @@ listings = []
 listing =  # the listing you are adding
   saved: false
   _user: username
+  size: ""
+  price: ""
+  desc: ""
   
 window.listing = listing
 
@@ -126,7 +129,12 @@ Listing =
         listing.lng = loc.lng()
         add_google_map_marker listing
         map.setCenter loc
-      
+    if listing.bubble && listing.bubble.view
+      $(".bubble.#{k}").text v
+
+
+
+
     
 adding_markers = []
 
@@ -158,14 +166,22 @@ add_google_map_marker = (listing, callback) ->
       adding_markers.push marker
       
     bubble_open = () ->
-      info = $("<div style='width: 450px; height: 475px;'><br /></div>")
+      info = """
+      <pre>
+      <span class="bubble location">#{listing.location}</span>
+      <span class="bubble size">#{listing.size}</span>
+      <span class="bubble price">#{listing.price}</span>
+      <span class="bubble desc">#{listing.desc}</span>
+      </pre>
+      """
       bubble = new google.maps.InfoWindow
-        content: info[0]
+        content: info
       for bubbly in bubbles
         bubbly.close()
       blubbles = []
       bubbles.push bubble
       bubble.open map, marker
+      listing.bubble = bubble
       
     google.maps.event.addListener marker, "click", bubble_open   
     if listing.saved is false
@@ -175,9 +191,14 @@ add_google_map_marker = (listing, callback) ->
 render_add_listing = (listing) ->
   listing_div = $ add_listing_form()
   save_listing_button =listing_div.find "#save_listing"
-  listing_div.find("#location").change () ->
-    Listing.set listing, "location", $(this).val()
-    
+  
+  listing_div.find("#location").typed
+    wait: 2000
+    callback: (text) ->
+      Listing.set listing, $(this).attr("id"), $(this).val()
+  listing_div.find("input[type='text'], textarea").keyup (e) ->
+    if $(this).attr("id") != "location"
+      Listing.set listing, $(this).attr("id"), $(this).val()
   
   save_listing_button.click () ->
     location = $(".add.location").val()
@@ -198,7 +219,7 @@ add_listing_form = () ->
   Location
   <input id="location">
   Size
-  <input id="Size">
+  <input id="size">
   Price
   <input id="price">
   Description

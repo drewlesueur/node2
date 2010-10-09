@@ -65,7 +65,10 @@
   listings = [];
   listing = {
     saved: false,
-    _user: username
+    _user: username,
+    size: "",
+    price: "",
+    desc: ""
   };
   window.listing = listing;
   html = {
@@ -114,12 +117,15 @@
     set: function(listing, k, v) {
       var loc;
       listing[k] = v;
-      return k === "location" ? (loc = get_location(v, function(loc) {
-        listing.lat = loc.lat();
-        listing.lng = loc.lng();
-        add_google_map_marker(listing);
-        return map.setCenter(loc);
-      })) : null;
+      if (k === "location") {
+        loc = get_location(v, function(loc) {
+          listing.lat = loc.lat();
+          listing.lng = loc.lng();
+          add_google_map_marker(listing);
+          return map.setCenter(loc);
+        });
+      }
+      return listing.bubble && listing.bubble.view ? $(".bubble." + (k)).text(v) : null;
     }
   };
   adding_markers = [];
@@ -159,9 +165,9 @@
     }
     bubble_open = function() {
       var _a, _b, _c, blubbles, bubble, bubbly, info;
-      info = $("<div style='width: 450px; height: 475px;'><br /></div>");
+      info = ("<pre>\n<span class=\"bubble location\">" + (listing.location) + "</span>\n<span class=\"bubble size\">" + (listing.size) + "</span>\n<span class=\"bubble price\">" + (listing.price) + "</span>\n<span class=\"bubble desc\">" + (listing.desc) + "</span>\n</pre>");
       bubble = new google.maps.InfoWindow({
-        content: info[0]
+        content: info
       });
       _b = bubbles;
       for (_a = 0, _c = _b.length; _a < _c; _a++) {
@@ -170,7 +176,8 @@
       }
       blubbles = [];
       bubbles.push(bubble);
-      return bubble.open(map, marker);
+      bubble.open(map, marker);
+      return (listing.bubble = bubble);
     };
     google.maps.event.addListener(marker, "click", bubble_open);
     return listing.saved === false ? bubble_open() : null;
@@ -179,8 +186,14 @@
     var listing_div, save_listing_button;
     listing_div = $(add_listing_form());
     save_listing_button = listing_div.find("#save_listing");
-    listing_div.find("#location").change(function() {
-      return Listing.set(listing, "location", $(this).val());
+    listing_div.find("#location").typed({
+      wait: 2000,
+      callback: function(text) {
+        return Listing.set(listing, $(this).attr("id"), $(this).val());
+      }
+    });
+    listing_div.find("input[type='text'], textarea").keyup(function(e) {
+      return $(this).attr("id") !== "location" ? Listing.set(listing, $(this).attr("id"), $(this).val()) : null;
     });
     save_listing_button.click(function() {
       var location, price;
@@ -194,7 +207,7 @@
     return listing_div;
   };
   add_listing_form = function() {
-    return "<pre>\n<select id=\"for_lease\">\n  <option>For Lease</option>\n  <option>For Purchase</option>\n</select>\nLocation\n<input id=\"location\">\nSize\n<input id=\"Size\">\nPrice\n<input id=\"price\">\nDescription\n<textarea id=\"desc\"></textarea>\n<select id=\"built_out\">\n  <option>Built out</option>\n  <option>Not built out</option>\n</select>\nYoutube Video\n<input id=\"youtube\" />\n<a href=\"#\">Add another youtube video</a>\n<input type=\"button\" id=\"save_listing\" value=\"Save\"/>\n</pre>";
+    return "<pre>\n<select id=\"for_lease\">\n  <option>For Lease</option>\n  <option>For Purchase</option>\n</select>\nLocation\n<input id=\"location\">\nSize\n<input id=\"size\">\nPrice\n<input id=\"price\">\nDescription\n<textarea id=\"desc\"></textarea>\n<select id=\"built_out\">\n  <option>Built out</option>\n  <option>Not built out</option>\n</select>\nYoutube Video\n<input id=\"youtube\" />\n<a href=\"#\">Add another youtube video</a>\n<input type=\"button\" id=\"save_listing\" value=\"Save\"/>\n</pre>";
   };
   display_left_panel = function() {};
   $(document).ready(function() {

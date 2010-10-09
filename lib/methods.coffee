@@ -43,5 +43,6 @@ this.methods =
           args.wh._id = ObjectID.createFromHexString(args.wh._id)
         collection.remove args.wh, (err, collection) ->
           res.send "done"
-        
+  
+
   
