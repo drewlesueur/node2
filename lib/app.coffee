@@ -95,6 +95,9 @@ app.get "/", (req, res) ->
   <head>
   </head>
   <body>
+    <script>
+      var username = "#{username}"
+    </script>
     <script src="http://maps.google.com/maps/api/js?sensor=false"></script>
     <script src="/js/json2.js"></script>
     <script src="/js/jquery.js"></script>
@@ -105,9 +108,6 @@ app.get "/", (req, res) ->
     <script src="/js/ajaxupload.js"></script>
     <script src="/coffee/officelist2.js"></script>
     <link type="text/css" rel="stylesheet" href="/css/style.css"></link>
-    <script>
-      var username = "#{username}"
-    </script>
   </body>
   </html>
   """

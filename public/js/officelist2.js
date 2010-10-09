@@ -1,7 +1,8 @@
 (function() {
-  var Listing, add_google_map_marker, add_listing_form, adding_markers, body, display_add_listing, display_left_panel, html, listing, listings, map, remove_adding_markers, render, render_add_listing, render_google_map, server, set;
+  var Listing, add_google_map_marker, add_listing_form, adding_markers, body, bubbles, display_left_panel, get_location, html, listing, listings, map, remove_adding_markers, render, render_add_listing, render_google_map, server, set;
   map = "";
   body = $("body");
+  bubbles = [];
   "Listing = () ->\nyoutubes_urls : []\nyoutube_html: []\nimages : []\ndefault_youtube: \"\"\nfor_lease = \"\"\nlocation = \"\"\nsize = \"\"\nprice = \"\"\nprice_type = \"\"\ndescription = \"\"\nbuilt_out = \"\"\nlat = \"\"\nlng = \"\"";
   (function() {
     return ($.fn.typed = function(settings) {
@@ -62,7 +63,11 @@
     return server("delete", args, func);
   };
   listings = [];
-  listing = {};
+  listing = {
+    saved: false,
+    _user: username
+  };
+  window.listing = listing;
   html = {
     div: function() {
       return $("<div><" + "/div>");
@@ -107,8 +112,14 @@
   set = function() {};
   Listing = {
     set: function(listing, k, v) {
+      var loc;
       listing[k] = v;
-      return k === "location" ? add_google_map_marker(v) : null;
+      return k === "location" ? (loc = get_location(v, function(loc) {
+        listing.lat = loc.lat();
+        listing.lng = loc.lng();
+        add_google_map_marker(listing);
+        return map.setCenter(loc);
+      })) : null;
     }
   };
   adding_markers = [];
@@ -121,27 +132,48 @@
     }
     return _a;
   };
-  add_google_map_marker = function(wherethe) {
+  get_location = function(wherethe, callback) {
     var geocoder;
-    remove_adding_markers();
     geocoder = new google.maps.Geocoder();
     return geocoder.geocode({
       address: wherethe
     }, function(results, status) {
-      var marker;
-      if (status === google.maps.GeocoderStatus.OK) {
-        map.setCenter(results[0].geometry.location);
-        marker = new google.maps.Marker({
-          position: results[0].geometry.location,
-          map: map,
-          title: "hello world",
-          draggable: true
-        });
-        return adding_markers.push(marker);
-      } else {
-        return alert("Geocode was not successful for the following reason: " + status);
-      }
+      return status === google.maps.GeocoderStatus.OK ? callback(results[0].geometry.location) : alert("there was a looking up problem");
     });
+  };
+  add_google_map_marker = function(listing, callback) {
+    var bubble_open, loc, marker, marker_options;
+    loc = new google.maps.LatLng(listing.lat, listing.lng);
+    marker_options = {
+      position: loc,
+      map: map,
+      title: "hello world"
+    };
+    if (listing._user === username) {
+      marker_options.draggable = true;
+    }
+    marker = new google.maps.Marker(marker_options);
+    if (listing.saved === false) {
+      remove_adding_markers();
+      adding_markers.push(marker);
+    }
+    bubble_open = function() {
+      var _a, _b, _c, blubbles, bubble, bubbly, info;
+      info = $("<div style='width: 450px; height: 475px;'><br /></div>");
+      bubble = new google.maps.InfoWindow({
+        content: info[0]
+      });
+      _b = bubbles;
+      for (_a = 0, _c = _b.length; _a < _c; _a++) {
+        bubbly = _b[_a];
+        bubbly.close();
+      }
+      blubbles = [];
+      bubbles.push(bubble);
+      return bubble.open(map, marker);
+    };
+    google.maps.event.addListener(marker, "click", bubble_open);
+    return listing.saved === false ? bubble_open() : null;
   };
   render_add_listing = function(listing) {
     var listing_div, save_listing_button;
@@ -159,10 +191,10 @@
         price: price
       });
     });
-    return listing_div.append(html.input().attr("class", "price add"), html.br(), save_listing_button);
+    return listing_div;
   };
   add_listing_form = function() {
-    return "<pre>\n<select id=\"for_lease\">\n  <option>For Lease</option>\n  <option>For Purchase</option>\n</select>\nLocation\n<input id=\"location\">\nSize\n<input id=\"Size\">\nPrice\n<input id=\"price\">\nDescription\n<textarea id=\"desc\"></textarea>\n<input type=\"button\" id=\"save_listing\" value=\"Save\"/>\n</pre>";
+    return "<pre>\n<select id=\"for_lease\">\n  <option>For Lease</option>\n  <option>For Purchase</option>\n</select>\nLocation\n<input id=\"location\">\nSize\n<input id=\"Size\">\nPrice\n<input id=\"price\">\nDescription\n<textarea id=\"desc\"></textarea>\n<select id=\"built_out\">\n  <option>Built out</option>\n  <option>Not built out</option>\n</select>\nYoutube Video\n<input id=\"youtube\" />\n<a href=\"#\">Add another youtube video</a>\n<input type=\"button\" id=\"save_listing\" value=\"Save\"/>\n</pre>";
   };
   display_left_panel = function() {};
   $(document).ready(function() {
@@ -182,5 +214,4 @@
       }
     });
   });
-  display_add_listing = function() {};
 })();

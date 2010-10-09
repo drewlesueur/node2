@@ -1,5 +1,6 @@
 map = ""
 body = $("body") 
+bubbles = []
 
 """
 Listing = () ->
@@ -68,7 +69,13 @@ server.del = (args, func) ->
   
 
 listings = []
-listing = {} # the listing you are adding
+
+
+listing =  # the listing you are adding
+  saved: false
+  _user: username
+  
+window.listing = listing
 
 html = 
   div : () ->
@@ -114,7 +121,11 @@ Listing =
   set: (listing, k, v) ->
     listing[k] = v #whatever the global listing is now
     if k is "location"
-      add_google_map_marker v
+      loc = get_location v, (loc) ->
+        listing.lat = loc.lat()
+        listing.lng = loc.lng()
+        add_google_map_marker listing
+        map.setCenter loc
       
     
 adding_markers = []
@@ -122,22 +133,44 @@ adding_markers = []
 remove_adding_markers = () ->
   for i in adding_markers
     i.setMap null
-    
-add_google_map_marker = (wherethe) ->
-  remove_adding_markers()
+
+get_location = (wherethe, callback) ->
   geocoder = new google.maps.Geocoder()
   geocoder.geocode address: wherethe, (results, status) ->
     if status is google.maps.GeocoderStatus.OK
-      map.setCenter results[0].geometry.location
-      marker = new google.maps.Marker
-        position: results[0].geometry.location
-        map: map
-        title: "hello world"
-        draggable: true
-      adding_markers.push marker
+      callback(results[0].geometry.location)
     else
-      alert "Geocode was not successful for the following reason: " + status
-
+      alert "there was a looking up problem"
+    
+add_google_map_marker = (listing, callback) ->
+    loc = new google.maps.LatLng listing.lat, listing.lng
+    marker_options = 
+      position: loc
+      map: map
+      title: "hello world"
+    
+    if listing._user is username
+      marker_options.draggable = true
+    marker = new google.maps.Marker marker_options
+     
+    if listing.saved is false
+      remove_adding_markers()
+      adding_markers.push marker
+      
+    bubble_open = () ->
+      info = $("<div style='width: 450px; height: 475px;'><br /></div>")
+      bubble = new google.maps.InfoWindow
+        content: info[0]
+      for bubbly in bubbles
+        bubbly.close()
+      blubbles = []
+      bubbles.push bubble
+      bubble.open map, marker
+      
+    google.maps.event.addListener marker, "click", bubble_open   
+    if listing.saved is false
+      bubble_open()
+    
 
 render_add_listing = (listing) ->
   listing_div = $ add_listing_form()
@@ -152,10 +185,8 @@ render_add_listing = (listing) ->
     Listing.update listing,
       location: location
       price: price
-  listing_div.append html.input().attr("class","price add"), html.br(), save_listing_button
+  return listing_div
   
-
-
 
 add_listing_form = () ->
   """
@@ -172,6 +203,13 @@ add_listing_form = () ->
   <input id="price">
   Description
   <textarea id="desc"></textarea>
+  <select id="built_out">
+    <option>Built out</option>
+    <option>Not built out</option>
+  </select>
+  Youtube Video
+  <input id="youtube" />
+  <a href="#">Add another youtube video</a>
   <input type="button" id="save_listing" value="Save"/>
   </pre>
   """
@@ -199,10 +237,6 @@ $(document).ready () ->
       
 
 
-
-display_add_listing = () ->
-  
-  
 
   
 
