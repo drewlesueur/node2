@@ -56,9 +56,7 @@ this.db = new mongo.Db 'mydb', new mongo.Server(host, port, {}), {}
 
 methods_handle = (req, res) ->
   args = req.body.args
-  console.log args
-  args = decodeURIComponent(args);
-  console.log args
+  args = decodeURIComponent(args);  
   methods[req.param("method")] JSON.parse(args), req, res #, db
 
 this.db.open () -> 
@@ -138,7 +136,7 @@ app.get '/auth/twitter/callback', (req, res, params) ->
 app.get '/coffee/:name.js', (req, res) ->
   exec "coffee -c public/js/" + req.params.name + '.coffee', (error, stdout, stderr) ->
     if error
-      console.log(error)
+      1 == 1
     fs.chmod 'public/js/' + req.params.name + '.js', parseInt("777", 8), () ->
       res.sendfile('public/js/' + req.params.name + '.js')
 

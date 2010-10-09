@@ -66,7 +66,9 @@ server.up = (args, func) ->
 
 server.del = (args, func) ->
   server "delete", args, func
-  
+
+server.addedit = (args, func) ->
+  server "addedit", args, func
 
 listings = []
 
@@ -77,6 +79,7 @@ listing =  # the listing you are adding
   size: ""
   price: ""
   desc: ""
+  _type: "listing"
   
 window.listing = listing
 
@@ -131,8 +134,13 @@ Listing =
         map.setCenter loc
     if listing.bubble && listing.bubble.view
       $(".bubble.#{k}").text v
-
-
+  
+  save: (listing, callback) ->
+    
+    if listing.bubble
+      delete listing.bubble
+    
+    server.addedit listing, callback 
 
 
     
@@ -203,9 +211,8 @@ render_add_listing = (listing) ->
   save_listing_button.click () ->
     location = $(".add.location").val()
     price = $(".add.location").val()
-    Listing.update listing,
-      location: location
-      price: price
+    Listing.save listing, () ->
+      console.log "saved"
   return listing_div
   
 

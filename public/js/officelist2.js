@@ -62,13 +62,17 @@
   server.del = function(args, func) {
     return server("delete", args, func);
   };
+  server.addedit = function(args, func) {
+    return server("addedit", args, func);
+  };
   listings = [];
   listing = {
     saved: false,
     _user: username,
     size: "",
     price: "",
-    desc: ""
+    desc: "",
+    _type: "listing"
   };
   window.listing = listing;
   html = {
@@ -126,6 +130,12 @@
         });
       }
       return listing.bubble && listing.bubble.view ? $(".bubble." + (k)).text(v) : null;
+    },
+    save: function(listing, callback) {
+      if (listing.bubble) {
+        delete listing.bubble;
+      }
+      return server.addedit(listing, callback);
     }
   };
   adding_markers = [];
@@ -199,9 +209,8 @@
       var location, price;
       location = $(".add.location").val();
       price = $(".add.location").val();
-      return Listing.update(listing, {
-        location: location,
-        price: price
+      return Listing.save(listing, function() {
+        return console.log("saved");
       });
     });
     return listing_div;
