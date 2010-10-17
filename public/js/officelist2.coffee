@@ -45,8 +45,7 @@ Listing = () ->
 )(jQuery)
     
 
-    
-
+   
 server = (method, args, func) ->
   $.ajax
     type: "POST",
@@ -74,7 +73,7 @@ listings = []
 
 
 listing =  # the listing you are adding
-  saved: false
+  is_new: true
   _user: username
   size: ""
   price: ""
@@ -94,9 +93,7 @@ html =
     $("<span><\/span>")
   button: () ->
     $('<input type="button" />')
-  
-    
-    
+
 render_google_map = () ->
   div_map = html.div().attr("id", "map").css
     width: 800
@@ -114,36 +111,41 @@ render_google_map = () ->
   };
   map = new google.maps.Map(document.getElementById("map"),myOptions)
 
-
- 
 render = () ->
   map_div = render_google_map()
   add_listing = render_add_listing(listing)
   body.append add_listing
 
-set = () ->
-  
+set = (obj, vals) ->
+  _.extend obj, vals
+  type = _.capitalize obj._type
+  if window[type]? and window[type].set
+    window[type].set obj, vals
+  else
+    console.log obj, type, window[type]
+
 Listing = 
-  set: (listing, k, v) ->
-    listing[k] = v #whatever the global listing is now
-    if k is "location"
-      loc = get_location v, (loc) ->
-        listing.lat = loc.lat()
-        listing.lng = loc.lng()
-        add_google_map_marker listing
-        map.setCenter loc
-    if listing.bubble && listing.bubble.view
-      $(".bubble.#{k}").text v
-  
+  set: (listing, vals) ->
+    _.each vals, (v, k) ->
+      listing[k] = v #whatever the global listing is now
+      if k is "location"
+        loc = get_location v, (loc) ->
+          listing.lat = loc.lat()
+          listing.lng = loc.lng()
+          add_google_map_marker listing
+          map.setCenter loc
+      if listing.bubble && listing.bubble.view
+        $(".bubble.#{k}").text v
+
   save: (listing, callback) ->
-    
+    console.log "test save"
     if listing.bubble
       delete listing.bubble
-    
-    server.addedit listing, callback 
+      delete listing.is_new
+    server.addedit listing, callback
 
+window.Listing = Listing
 
-    
 adding_markers = []
 
 remove_adding_markers = () ->
@@ -169,7 +171,7 @@ add_google_map_marker = (listing, callback) ->
       marker_options.draggable = true
     marker = new google.maps.Marker marker_options
      
-    if listing.saved is false
+    if listing.is_new is true
       remove_adding_markers()
       adding_markers.push marker
       
@@ -192,7 +194,7 @@ add_google_map_marker = (listing, callback) ->
       listing.bubble = bubble
       
     google.maps.event.addListener marker, "click", bubble_open   
-    if listing.saved is false
+    if listing.is_new is true
       bubble_open()
     
 
@@ -203,10 +205,15 @@ render_add_listing = (listing) ->
   listing_div.find("#location").typed
     wait: 2000
     callback: (text) ->
-      Listing.set listing, $(this).attr("id"), $(this).val()
+      updater = {}
+      updater[$(this).attr("id")] = $(this).val()
+      set listing, updater
   listing_div.find("input[type='text'], textarea").keyup (e) ->
     if $(this).attr("id") != "location"
-      Listing.set listing, $(this).attr("id"), $(this).val()
+      updater = {}
+      updater[$(this).attr("id")] = $(this).val()
+      set listing, updater
+        
   
   save_listing_button.click () ->
     location = $(".add.location").val()

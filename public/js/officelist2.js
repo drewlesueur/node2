@@ -67,7 +67,7 @@
   };
   listings = [];
   listing = {
-    saved: false,
+    is_new: true,
     _user: username,
     size: "",
     price: "",
@@ -116,28 +116,38 @@
     add_listing = render_add_listing(listing);
     return body.append(add_listing);
   };
-  set = function() {};
+  set = function(obj, vals) {
+    var _a, type;
+    _.extend(obj, vals);
+    type = _.capitalize(obj._type);
+    return (typeof (_a = window[type]) !== "undefined" && _a !== null) && window[type].set ? window[type].set(obj, vals) : console.log(obj, type, window[type]);
+  };
   Listing = {
-    set: function(listing, k, v) {
-      var loc;
-      listing[k] = v;
-      if (k === "location") {
-        loc = get_location(v, function(loc) {
-          listing.lat = loc.lat();
-          listing.lng = loc.lng();
-          add_google_map_marker(listing);
-          return map.setCenter(loc);
-        });
-      }
-      return listing.bubble && listing.bubble.view ? $(".bubble." + (k)).text(v) : null;
+    set: function(listing, vals) {
+      return _.each(vals, function(v, k) {
+        var loc;
+        listing[k] = v;
+        if (k === "location") {
+          loc = get_location(v, function(loc) {
+            listing.lat = loc.lat();
+            listing.lng = loc.lng();
+            add_google_map_marker(listing);
+            return map.setCenter(loc);
+          });
+        }
+        return listing.bubble && listing.bubble.view ? $(".bubble." + (k)).text(v) : null;
+      });
     },
     save: function(listing, callback) {
+      console.log("test save");
       if (listing.bubble) {
         delete listing.bubble;
+        delete listing.is_new;
       }
       return server.addedit(listing, callback);
     }
   };
+  window.Listing = Listing;
   adding_markers = [];
   remove_adding_markers = function() {
     var _a, _b, _c, _d, i;
@@ -169,7 +179,7 @@
       marker_options.draggable = true;
     }
     marker = new google.maps.Marker(marker_options);
-    if (listing.saved === false) {
+    if (listing.is_new === true) {
       remove_adding_markers();
       adding_markers.push(marker);
     }
@@ -190,7 +200,7 @@
       return (listing.bubble = bubble);
     };
     google.maps.event.addListener(marker, "click", bubble_open);
-    return listing.saved === false ? bubble_open() : null;
+    return listing.is_new === true ? bubble_open() : null;
   };
   render_add_listing = function(listing) {
     var listing_div, save_listing_button;
@@ -199,11 +209,19 @@
     listing_div.find("#location").typed({
       wait: 2000,
       callback: function(text) {
-        return Listing.set(listing, $(this).attr("id"), $(this).val());
+        var updater;
+        updater = {};
+        updater[$(this).attr("id")] = $(this).val();
+        return set(listing, updater);
       }
     });
     listing_div.find("input[type='text'], textarea").keyup(function(e) {
-      return $(this).attr("id") !== "location" ? Listing.set(listing, $(this).attr("id"), $(this).val()) : null;
+      var updater;
+      if ($(this).attr("id") !== "location") {
+        updater = {};
+        updater[$(this).attr("id")] = $(this).val();
+        return set(listing, updater);
+      }
     });
     save_listing_button.click(function() {
       var location, price;

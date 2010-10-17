@@ -33,4 +33,8 @@ _.mixin({
   return _(str).s(0, with_what.length) == with_what
 }
 
+,capitalize : function(str) {
+  return str.charAt(0).toUpperCase() + str.substring(1).toLowerCase();
+}
+
 })

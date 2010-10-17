@@ -1,17 +1,20 @@
 create = (args, req, res) ->
-  db.collection args.type, (err, collection) ->
-    if err
-      res.send "bro"
-    else
-      args.va._user = req.user()
-      
-      collection.insert {a:1}, (err, docs) ->
-        res.send docs
-          
+  db.collection args._type, (err, collection) ->
+      if err
+        console.log err
+        res.send "bro"
+      else
+        
+        args._user = req.user()
+        collection.insert args, (err, docs) ->
+          if err
+            console.log err
+            res.send "super error"
+          res.send "1"
+  
 this.methods =
   create : create
-          
-   request : (args, req, res) ->
+  request : (args, req, res) ->
     db.collection args.type, (err, collection) ->
       if err
         res.send "brokep"
@@ -26,7 +29,7 @@ this.methods =
         catch e
           res.send e
   update : (args, req, res) ->
-    db.collection args.type, (err, collection) ->
+    db.collection args._type, (err, collection) ->
       if err
         res.send "broke"
       else
@@ -37,7 +40,7 @@ this.methods =
           res.send wha
           
   delete: (args, req, res) ->
-     db.collection args.type, (err, collection) ->
+     db.collection args._type, (err, collection) ->
       if err
         res.send "broke"
       else
@@ -47,7 +50,9 @@ this.methods =
         collection.remove args.wh, (err, collection) ->
           res.send "done"
   
-  
+  test: () ->
+    console.log "test"
+    
   addedit: (args, req, res) ->
     console.log "got to add edit"
     db.collection args._type, (err, collection) ->
@@ -63,16 +68,9 @@ this.methods =
             args.wh._id = orig_args._id
             delete orig_args._id
             args.va = orig_args
-            args.type = orig_args._type
+            args._type = orig_args._type
             this.update args, req, res
           else   #create    
-            
-            orig_args = args
-            args = {}
-            
-            args.type = orig_args._type
-            args.va = orig_args
-            console.log "yoyo"
             create args, req, res
         catch e
           res.send e

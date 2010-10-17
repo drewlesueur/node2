@@ -30,7 +30,7 @@ MyTest = (req, res, next) ->
     req.session.officelist = {}
 
   req.user = () ->
-    return req.session.officelist.userdomain + ":" + req.session.officelist.userid
+    return (req.session.officelist.userdomain + ":" + req.session.officelist.userid) or "none"
   
   next()
 
