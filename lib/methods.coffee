@@ -13,7 +13,7 @@ create = (args, req, res) ->
           res.send "1"
   
 this.methods =
-  create : create
+  insert : insert
   request : (args, req, res) ->
     db.collection args.type, (err, collection) ->
       if err
@@ -39,7 +39,7 @@ this.methods =
         collection.update args.wh, args.va, {upsert: args.upsert, multi: args.multi}, (err, wha) ->
           res.send wha
           
-  delete: (args, req, res) ->
+  remove: (args, req, res) ->
      db.collection args._type, (err, collection) ->
       if err
         res.send "broke"
@@ -52,7 +52,8 @@ this.methods =
   
   test: () ->
     console.log "test"
-    
+  
+  #use upsert instead of this!  
   addedit: (args, req, res) ->
     console.log "got to add edit"
     db.collection args._type, (err, collection) ->
